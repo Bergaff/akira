@@ -1,0 +1,15 @@
+# Copy to .dev.vars for local development; never commit real secrets.
+PANEL_PASSWORD="change-this-password"
+SESSION_SECRET="replace-with-a-random-secret-of-at-least-32-characters"
+DISCORD_TOKEN=""
+DISCORD_COOKIES=""
+# Optional notification and Google Drive secrets (leave blank to disable):
+# TELEGRAM_BOT_TOKEN=""
+# TELEGRAM_CHAT_ID=""
+# NOTIFY_WEBHOOK=""
+# GOOGLE_DRIVE_CLIENT_ID=""
+# GOOGLE_DRIVE_CLIENT_SECRET=""
+# GOOGLE_DRIVE_REFRESH_TOKEN=""
+# GOOGLE_DRIVE_FOLDER_ID=""
+# OUTBOUND_PROXY=""
+# OUTBOUND_PROXY_SECRET=""

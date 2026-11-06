@@ -1,0 +1,35 @@
+name = "akira-discord-export"
+main = "src/index.ts"
+compatibility_date = "2026-07-01"
+# Keep dashboard-managed variables and secrets across deployments.
+keep_vars = true
+
+[assets]
+directory = "./public"
+binding = "ASSETS"
+run_worker_first = true
+
+[[d1_databases]]
+binding = "DB"
+database_name = "akira-discord-export"
+# Replace with the ID returned by `wrangler d1 create` before deployment.
+database_id = "REPLACE_WITH_D1_DATABASE_ID"
+migrations_dir = "migrations"
+
+[[r2_buckets]]
+binding = "BUCKET"
+bucket_name = "akira-discord-export"
+
+[[queues.producers]]
+binding = "QUEUE"
+queue = "akira-export"
+
+[[queues.consumers]]
+queue = "akira-export"
+max_batch_size = 1
+max_batch_timeout = 1
+max_retries = 10
+dead_letter_queue = "akira-export-dlq"
+
+[triggers]
+crons = ["* * * * *"]

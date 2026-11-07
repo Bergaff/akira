@@ -47,6 +47,13 @@ jobs:
             Write-Host "::error::$message"
             exit $code
           }
+      - name: Packaged application smoke test
+        shell: pwsh
+        run: |
+          $env:AKIRA_DESKTOP_SMOKE = '1'
+          $process = Start-Process -FilePath "desktop/release/win-unpacked/Akira Discord Export.exe" -PassThru
+          if (-not $process.WaitForExit(45000)) { $process.Kill(); throw 'Packaged application timed out' }
+          if ($process.ExitCode -ne 0) { throw "Packaged application failed with exit code $($process.ExitCode)" }
       - uses: actions/upload-artifact@v4
         with:
           name: Akira-Windows-Setup

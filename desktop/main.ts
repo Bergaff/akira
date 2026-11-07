@@ -2,11 +2,14 @@ import { app, BrowserWindow, ipcMain, safeStorage, dialog, shell, session } from
 import * as path from 'node:path';
 import * as fs from 'node:fs/promises';
 import { pathToFileURL } from 'node:url';
+import { tmpdir } from 'node:os';
+import { randomUUID } from 'node:crypto';
 import { LocalBucket, LocalD1, LocalQueue, atomicWrite } from './adapters';
 import { jobsApi } from '../src/jobs-api';
 import type { Env } from '../src/env';
 
-const SMOKE = process.env.AKIRA_DESKTOP_SMOKE === '1' && !app.isPackaged;
+const SMOKE = process.env.AKIRA_DESKTOP_SMOKE === '1';
+if (SMOKE) app.setPath('userData', path.join(tmpdir(), `akira-smoke-${randomUUID()}`));
 const SETTINGS = ['DISCORD_TOKEN','DISCORD_COOKIES','NOTIFY_WEBHOOK','TELEGRAM_BOT_TOKEN','TELEGRAM_CHAT_ID','GOOGLE_DRIVE_CLIENT_ID','GOOGLE_DRIVE_CLIENT_SECRET','GOOGLE_DRIVE_REFRESH_TOKEN','GOOGLE_DRIVE_FOLDER_ID','OUTBOUND_PROXY','OUTBOUND_PROXY_SECRET'] as const;
 type Key = typeof SETTINGS[number];
 type Settings = Partial<Record<Key,string>>;
@@ -127,9 +130,14 @@ async function start() {
     if (!safeStorage.isEncryptionAvailable()) throw new Error('Windows safeStorage is unavailable');
     const secret = 'akira-smoke-test';
     if (safeStorage.decryptString(safeStorage.encryptString(secret)) !== secret) throw new Error('Windows safeStorage roundtrip failed');
+    await storeSecrets({DISCORD_TOKEN:'smoke-test-token'});
+    if ((await loadSecrets()).DISCORD_TOKEN !== 'smoke-test-token') throw new Error('Encrypted secret file roundtrip failed');
     const result = await window.webContents.executeJavaScript(`Promise.all([window.akira.settingsStatus(), window.akira.jobs()]).then(([settings, jobs]) => ({settings, jobs}))`);
     if (!result || !Array.isArray(result.jobs?.jobs) || typeof result.settings?.DISCORD_TOKEN !== 'boolean') throw new Error('IPC bridge smoke test failed');
     console.log('Desktop smoke test passed: SQLite, window, IPC and Windows secret storage');
+    if (watchdog) clearInterval(watchdog);
+    queue.close(); db.close();
+    try { await fs.rm(app.getPath('userData'), {recursive:true,force:true}); } catch {}
     app.exit(0);
   }
 }

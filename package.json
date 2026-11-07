@@ -10,7 +10,7 @@
     "test": "vitest run",
     "desktop:bundle": "esbuild desktop/main.ts --bundle --platform=node --target=node22 --external:electron --format=cjs --outfile=desktop/dist/main.cjs && esbuild desktop/preload.ts --bundle --platform=node --target=node22 --external:electron --format=cjs --outfile=desktop/dist/preload.cjs",
     "desktop": "npm run desktop:bundle && electron .",
-    "desktop:dist:win": "npm run desktop:bundle && electron-builder --win nsis --x64",
+    "desktop:dist:win": "npm run desktop:bundle && electron-builder --win nsis --x64 --publish never",
     "desktop:typecheck": "tsc --noEmit -p tsconfig.desktop.json"
   },
   "devDependencies": {

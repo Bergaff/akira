@@ -134,7 +134,31 @@ async function start() {
     if ((await loadSecrets()).DISCORD_TOKEN !== 'smoke-test-token') throw new Error('Encrypted secret file roundtrip failed');
     const result = await window.webContents.executeJavaScript(`Promise.all([window.akira.settingsStatus(), window.akira.jobs()]).then(([settings, jobs]) => ({settings, jobs}))`);
     if (!result || !Array.isArray(result.jobs?.jobs) || typeof result.settings?.DISCORD_TOKEN !== 'boolean') throw new Error('IPC bridge smoke test failed');
-    console.log('Desktop smoke test passed: SQLite, window, IPC and Windows secret storage');
+    // Exercise the actual packaged app, IPC and local queue with a fake Discord.
+    // This is deliberately unreachable unless the explicit smoke-test flag is set.
+    const ms = Date.parse('2020-01-01T00:00:01.000Z');
+    const id = ((BigInt(ms)-1420070400000n)<<22n).toString();
+    globalThis.fetch = (async (input: RequestInfo | URL) => {
+      const url = new URL(typeof input === 'string' ? input : input instanceof URL ? input.href : input.url);
+      if (url.hostname !== 'discord.com' || url.pathname !== '/api/v9/channels/123456/messages') throw new Error('Unexpected smoke test request');
+      const before = BigInt(url.searchParams.get('before') ?? '0');
+      const message = {id,timestamp:new Date(ms).toISOString(),author:{id:'456789'},content:'локальный тест'};
+      return new Response(JSON.stringify(BigInt(id)<before?[message]:[]),{status:200,headers:{'content-type':'application/json'}});
+    }) as typeof fetch;
+    await window.webContents.executeJavaScript(`window.akira.create({source_type:'channel',source_id:'123456',target_user_id:'456789',date_from:'2020-01-01',date_to:'2020-01-01',mode:'scan',part_size:3}).then(r => window.akira.control(r.job.id,'start'))`);
+    let completed = false;
+    for (let attempt=0; attempt<100; attempt++) {
+      const jobs = await window.webContents.executeJavaScript(`window.akira.jobs()`);
+      const job = jobs.jobs[0];
+      if (job?.status === 'failed') throw new Error('Mock export failed');
+      if (job?.status === 'completed') { completed = job.written === 1; break; }
+      await new Promise(resolve=>setTimeout(resolve,200));
+    }
+    if (!completed) throw new Error('Mock export did not complete');
+    const part = await db.prepare('SELECT r2_key FROM job_parts WHERE job_id=1 AND part_index=1').first<{r2_key:string}>();
+    const object = part && await bucket.get(part.r2_key);
+    if (!object || new TextDecoder().decode(await object.arrayBuffer()) !== 'локальный тест') throw new Error('Local output mismatch');
+    console.log('Desktop smoke test passed: UI, SQLite, IPC, Windows secret storage, local queue and mock export');
     if (watchdog) clearInterval(watchdog);
     queue.close(); db.close();
     try { await fs.rm(app.getPath('userData'), {recursive:true,force:true}); } catch {}

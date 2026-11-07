@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta name="color-scheme" content="dark">
+<title>Akira — выгрузка Discord на компьютер</title>
+<link rel="stylesheet" href="style.css"><script src="app.js" defer></script>
+</head>
+<body><main class="shell">
+<header class="header"><span class="brand"><span class="brand-icon">A</span><span>akira <small> / приложение для Windows</small></span></span><span class="badge"><span class="dot"></span> ЛОКАЛЬНЫЙ РЕЖИМ</span></header>
+<section>
+<div class="intro"><div><div class="eyebrow"><span class="line"></span> ВЫГРУЗКА НА КОМПЬЮТЕР</div><h1>Архив сообщений<span class="accent">.</span></h1><p class="muted">Ваши задания и файлы хранятся на этом компьютере, без Cloudflare.</p></div></div>
+<div class="notice">Пока идёт выгрузка, приложение должно быть открыто, а компьютер — включён и подключён к интернету. После сна работа продолжится при пробуждении; после закрытия — при следующем запуске приложения.</div>
+<div class="dashboard-grid">
+<div>
+<article class="card form-card"><div class="card-label">НОВОЕ ЗАДАНИЕ</div><h2>Параметры выгрузки</h2>
+<form id="job-form">
+<label for="source-type">Источник</label><select id="source-type"><option value="channel">Один канал</option><option value="guild">Весь сервер</option></select>
+<label for="source">ID или ссылка на канал / сервер</label><input id="source" required placeholder="ID или ссылка">
+<label for="author">ID автора</label><input id="author" value="503801259925700610" required inputmode="numeric">
+<div class="two"><div><label for="from">От, UTC</label><input id="from" type="date" value="2019-12-09" required></div><div><label for="to">До, UTC</label><input id="to" type="date" value="2021-03-10" required></div></div>
+<div class="two"><div><label for="size">Сообщений в части</label><input id="size" type="number" min="1" max="3000" value="3000" required></div><div><label for="delay-min">Пауза от, мс</label><input id="delay-min" type="number" min="1200" max="10000" value="1200" required></div></div>
+<label for="delay-max">Пауза до, мс</label><input id="delay-max" type="number" min="1200" max="10000" value="2800" required>
+<label class="check"><input id="blank" type="checkbox" checked> Пустая строка между сообщениями</label>
+<label class="check"><input id="skip" type="checkbox" checked> Пропускать пустые сообщения</label>
+<label class="check"><input id="dry" type="checkbox"> Пробный проход — только подсчёт</label>
+<button class="primary" type="submit">Создать и запустить <span>→</span></button><p id="job-error" class="error" role="alert"></p>
+</form></article>
+<article class="card settings-card"><div class="card-label">ПОДКЛЮЧЕНИЕ</div><h2>Настройки и секреты</h2>
+<p class="muted">Секреты сохраняются с системным шифрованием Windows для текущего пользователя. Сохранённые значения не показываются повторно. Оставьте поле пустым, чтобы не менять его.</p>
+<p id="settings-status" class="settings-status"></p>
+<form id="settings-form" autocomplete="off">
+<label for="discord-token">Токен Discord</label><input id="discord-token" type="password" autocomplete="off" placeholder="Токен без Bot">
+<details><summary>Другие настройки · Telegram, Google Диск</summary>
+<label for="discord-cookies">Cookies Discord</label><input id="discord-cookies" type="password" autocomplete="off">
+<label for="telegram-token">Токен Telegram-бота</label><input id="telegram-token" type="password" autocomplete="off">
+<label for="telegram-chat">ID чата Telegram</label><input id="telegram-chat" type="text" autocomplete="off">
+<label for="notify-webhook">Webhook Discord</label><input id="notify-webhook" type="password" autocomplete="off">
+<label for="google-client">Google OAuth client ID</label><input id="google-client" type="password" autocomplete="off">
+<label for="google-secret">Google OAuth client secret</label><input id="google-secret" type="password" autocomplete="off">
+<label for="google-refresh">Google refresh token</label><input id="google-refresh" type="password" autocomplete="off">
+<label for="google-folder">ID папки Google Диска</label><input id="google-folder" type="text" autocomplete="off">
+<label for="proxy-url">Доверенный relay (необязательно)</label><input id="proxy-url" type="password" autocomplete="off">
+<label for="proxy-secret">Секрет relay (необязательно)</label><input id="proxy-secret" type="password" autocomplete="off">
+</details>
+<button class="secondary" type="submit">Сохранить настройки <span>→</span></button><button id="clear-settings" type="button" class="text-button clear">Удалить все сохранённые секреты</button>
+<p id="settings-message" class="error" role="status"></p></form></article>
+</div>
+<div><article class="card jobs-card"><div class="card-label">ВАШИ ЗАДАНИЯ</div><h2>Выгрузки</h2><p class="muted">Прогресс сохраняется на компьютере автоматически.</p><div id="jobs" class="jobs"><p class="muted">Загрузка…</p></div></article>
+<article class="card log-card"><div class="card-label">ЖУРНАЛ</div><h2 id="log-title">Выберите задание</h2><div id="logs" class="logs muted">Здесь появятся последние записи.</div></article></div>
+</div></section>
+<footer><span>AKIRA / WINDOWS</span><span>ФАЙЛЫ ПОД ВАШИМ КОНТРОЛЕМ</span></footer>
+</main></body></html>
